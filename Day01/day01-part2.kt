@@ -2,6 +2,7 @@
 package AdventDay01Part2
 import AdventDay01Part1.readInputFile
 import java.io.File
+import kotlin.sequences.findLast
 
 fun extractNumberAndText(line: String): Int {
     println("Testing line: $line")
@@ -18,9 +19,18 @@ fun extractNumberAndText(line: String): Int {
     //     "eight" to 8
     //     "nine" to 9
     // )
-    val firstTextNum: MatchResult? = numRegex.find(line)
-    if (firstTextNum != null) {
-        println("The first occurrence of a textual number is ${firstTextNum.value} at range ${firstTextNum.range}")
+    val matchedTextNums: Sequence<MatchResult>? = numRegex.findAll(line)
+    if (matchedTextNums != null) {
+        val firstTextNum: MatchResult? = matchedTextNums.firstOrNull()
+        val lastTextNum: MatchResult? = matchedTextNums.lastOrNull()
+        if (firstTextNum != null) {
+            println("The first occurrence of a textual number is ${firstTextNum.value} at range ${firstTextNum.range}")
+        } else {
+            println("There were no textual numbers in line: \"$line\"")
+        }
+        if (lastTextNum != null) {
+            println("The last occurrence of a textual number is ${lastTextNum.value} at range ${lastTextNum.range}")
+        }
     }
     for (c in line) {
         if (c.isDigit()) {

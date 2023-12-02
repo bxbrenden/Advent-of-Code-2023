@@ -7,7 +7,7 @@ If I fizzle out on any given day, I'll just revert to Python.
 I'll use the ⭐ emoji to indicate I solved a puzzle and the ✰ emoji to indicate it's unsolved.
 
 ## Kotlin
-- Day 01: ⭐✰
+- Day 01: ⭐⭐
 - Day 02: ⭐⭐
 
 ## Python:

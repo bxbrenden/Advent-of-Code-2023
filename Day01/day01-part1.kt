@@ -1,4 +1,5 @@
 
+package AdventDay01Part1
 import java.io.File
 
 fun readInputFile(filename: String): MutableList<String> {

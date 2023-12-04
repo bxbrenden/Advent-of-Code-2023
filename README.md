@@ -9,6 +9,8 @@ I'll use the ⭐ emoji to indicate I solved a puzzle and the ✰ emoji to indica
 ## Kotlin
 - Day 01: ⭐⭐
 - Day 02: ⭐⭐
+- Day 03: ✰✰
+- Day 04: ⭐
 
 ## Python:
 - Day 01: ✰⭐

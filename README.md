@@ -13,6 +13,7 @@ I'll use the ⭐ emoji to indicate I solved a puzzle and the ✰ emoji to indica
 - Day 04: ⭐✰
 - Day 05: ⭐✰
 - Day 06: ⭐⭐
+- Day 07: ⭐✰
 
 ## Python:
 - Day 01: ✰⭐

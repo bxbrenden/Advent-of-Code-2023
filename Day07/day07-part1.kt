@@ -34,34 +34,11 @@ enum class HandType(val strength: Int) {
     HighCard(1),
 }
 
-class Hand(val cardsList: String, val bidStr: String) : Comparator<Hand> {
+class Hand(val cardsList: String, val bidStr: String) {
     val cards: List<Card>
     val bid: Int
     val handType: HandType
     val strength: Int
-        get() {
-            return this.handType.strength * 100_000 +
-            this.cards[0].rank * 10_000 +
-            this.cards[1].rank * 1_000 +
-            this.cards[2].rank * 100 +
-            this.cards[3].rank * 10 +
-            this.cards[4].rank
-        }
-
-    override fun compare(ownHand: Hand, other: Hand): Int {
-        if (ownHand.strength == other.strength) {
-            for (i in 1..5) {
-                if (ownHand.cards[i].rank > other.cards[i].rank) {
-                    return 1
-                }
-            }
-            return 0
-        } else if (ownHand.strength > other.strength) {
-            return 1
-        } else {
-            return -1
-        }
-    }
 
     override fun toString(): String {
         return this.cards.map {it.cardName}.joinToString(separator = "")
@@ -95,6 +72,7 @@ class Hand(val cardsList: String, val bidStr: String) : Comparator<Hand> {
         this.cards = charToCard(cardsList)
         this.bid = bidStr.toInt()
         this.handType = categorizeHand(this)
+        this.strength = this.handType.strength
     }
 }
 
@@ -110,11 +88,8 @@ fun getHandsFromPuzzle(puzzle: List<String>): MutableList<Hand> {
 }
 
 fun categorizeHand(hand: Hand): HandType {
-    println("Categorizing hand: $hand")
-    println("$hand.n")
     val grouping = hand.cards.groupingBy {it.rank}.eachCount()
         .filter {it.value > 1}
-    println("Grouping: $grouping")
     val numPairs = grouping.values.filter {it == 2}.count()
     val numTrips = grouping.values.filter {it == 3}.count()
     val numQuads = grouping.values.filter {it == 4}.count()
@@ -137,19 +112,32 @@ fun categorizeHand(hand: Hand): HandType {
             else -> throw IllegalStateException("Number of pairs was not 0, 1, or 2: $numPairs")
         }
     }
-    println("Hand type for hand $hand: $handType")
     return handType
+}
+
+fun calcWinnings(allHands: List<Hand>): Int {
+    var winnings = 0
+    val sorted: List<Hand> = allHands.sortedWith(
+        compareBy(
+            {it.strength},
+            {it.cards[0].rank},
+            {it.cards[1].rank},
+            {it.cards[2].rank},
+            {it.cards[3].rank},
+            {it.cards[4].rank},
+        )
+    ).reversed()
+    println(sorted)
+    sorted.mapIndexed{ index, hand -> 
+        val rank = allHands.size - index
+        winnings += hand.bid * rank
+    }
+    return winnings
 }
 
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "sample_input.txt"
     val puzzle = readInput(filename)
     val allHands = getHandsFromPuzzle(puzzle)
-    println(allHands)
-    allHands.forEach {hand -> categorizeHand(hand)}
-    val hand1 = Hand("23333", "123")
-    val hand2 = Hand("32222", "123")
-    println("Strength of $hand1: ${hand1.strength}")
-    println("Strength of $hand2: ${hand2.strength}")
-    println(allHands.sortedWith(compareBy {it.strength} ).reversed())
+    println("Winnings: ${calcWinnings(allHands)}")
 }

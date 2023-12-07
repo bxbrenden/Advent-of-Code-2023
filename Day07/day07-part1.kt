@@ -8,20 +8,20 @@ fun readInput(filename: String): List<String> {
     return lineList
 }
 
-enum class Card(val rank: Int) {
-    A(13),
-    K(12),
-    Q(11),
-    J(10),
-    T(9),
-    _9(8),
-    _8(7),
-    _7(6),
-    _6(5),
-    _5(4),
-    _4(3),
-    _3(2),
-    _2(1)
+enum class Card(val rank: Int, val cardName: Char) {
+    A(14, 'A'),
+    K(13, 'K'),
+    Q(12, 'Q'),
+    J(11, 'J'),
+    T(10, 'T'),
+    _9(9, '9'),
+    _8(8, '8'),
+    _7(7, '7'),
+    _6(6, '6'),
+    _5(5, '5'),
+    _4(4, '4'),
+    _3(3, '3'),
+    _2(2, '2')
 }
 
 enum class HandType(val strength: Int) {
@@ -32,6 +32,25 @@ enum class HandType(val strength: Int) {
     TwoPair(3),
     OnePair(2),
     HighCard(1),
+}
+
+class Hand(val cards: List<Card>, val bid: Int) : Comparator<Hand> {
+    override fun compare(ownHand: Hand, other: Hand): Int {
+        if (ownHand.handType.strength == other.handType.strength) {
+            return 0
+        } else if (ownHand.handType.strength > other.handType.strength) {
+            return 1
+        } else {
+            return -1
+        }
+    }
+
+    override fun toString(): String {
+        return this.cards.map {it.cardName}.joinToString(separator = "")
+    }
+
+    val handType: HandType
+        get() = categorizeHand(this)
 }
 
 fun charToCard(c: Char): Card {
@@ -54,8 +73,8 @@ fun charToCard(c: Char): Card {
     return card
 }
 
-fun getHandsFromPuzzle(puzzle: List<String>): MutableList<Pair<List<Card>, Int>> {
-    var allHands = mutableListOf<Pair<List<Card>, Int>>()
+fun getHandsFromPuzzle(puzzle: List<String>): MutableList<Hand> {
+    var allHands = mutableListOf<Hand>()
     puzzle.forEach {line ->
         var cards = mutableListOf<Card>()
         line.split("\\s".toRegex())[0]
@@ -63,14 +82,15 @@ fun getHandsFromPuzzle(puzzle: List<String>): MutableList<Pair<List<Card>, Int>>
             .map { cards.add(it)}
         val bid = line.split("\\s".toRegex())[1]
             .trim().toInt()
-        allHands.add(Pair(cards, bid))
+        allHands.add(Hand(cards, bid))
+        // allHands.add(Pair(cards, bid))
     }
     return allHands
 }
 
-fun categorizeHand(hand: List<Card>): HandType {
+fun categorizeHand(hand: Hand): HandType {
     println("Categorizing hand: $hand")
-    val grouping = hand.groupingBy {it.rank}.eachCount()
+    val grouping = hand.cards.groupingBy {it.rank}.eachCount()
         .filter {it.value > 1}
     println("Grouping: $grouping")
     val numPairs = grouping.values.filter {it == 2}.count()
@@ -105,6 +125,7 @@ fun main(args: Array<String>) {
     puzzle.forEach {println(it)}
     val allHands = getHandsFromPuzzle(puzzle)
     println(allHands)
-    println("Testing: ${allHands[0].first[0].rank}")
-    allHands.forEach {hand -> categorizeHand(hand.first)}  
+    allHands.forEach {hand -> categorizeHand(hand)}
+    // val hand1 = Hand("AAAAK", 123)
+    // println(allHands.sortedWith { compareBy{categorizeHand(it).strength} })
 }

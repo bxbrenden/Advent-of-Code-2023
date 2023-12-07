@@ -34,11 +34,29 @@ enum class HandType(val strength: Int) {
     HighCard(1),
 }
 
-class Hand(val cards: List<Card>, val bid: Int) : Comparator<Hand> {
+class Hand(val cardsList: String, val bidStr: String) : Comparator<Hand> {
+    val cards: List<Card>
+    val bid: Int
+    val handType: HandType
+    val strength: Int
+        get() {
+            return this.handType.strength * 100_000 +
+            this.cards[0].rank * 10_000 +
+            this.cards[1].rank * 1_000 +
+            this.cards[2].rank * 100 +
+            this.cards[3].rank * 10 +
+            this.cards[4].rank
+        }
+
     override fun compare(ownHand: Hand, other: Hand): Int {
-        if (ownHand.handType.strength == other.handType.strength) {
+        if (ownHand.strength == other.strength) {
+            for (i in 1..5) {
+                if (ownHand.cards[i].rank > other.cards[i].rank) {
+                    return 1
+                }
+            }
             return 0
-        } else if (ownHand.handType.strength > other.handType.strength) {
+        } else if (ownHand.strength > other.strength) {
             return 1
         } else {
             return -1
@@ -49,47 +67,51 @@ class Hand(val cards: List<Card>, val bid: Int) : Comparator<Hand> {
         return this.cards.map {it.cardName}.joinToString(separator = "")
     }
 
-    val handType: HandType
-        get() = categorizeHand(this)
+    fun charToCard(cl: String): List<Card> {
+        var cards = mutableListOf<Card>()
+        for (c in cl) {
+            val card = when (c) {
+                'A' -> Card.A
+                'K' -> Card.K
+                'Q' -> Card.Q
+                'J' -> Card.J
+                'T' -> Card.T
+                '9' -> Card._9
+                '8' -> Card._8
+                '7' -> Card._7
+                '6' -> Card._6
+                '5' -> Card._5
+                '4' -> Card._4
+                '3' -> Card._3
+                '2' -> Card._2
+                else -> throw IllegalStateException("Unknown card char $c")
+            }
+            cards.add(card)
+        }
+        return cards
+    }
+
+    init {
+        this.cards = charToCard(cardsList)
+        this.bid = bidStr.toInt()
+        this.handType = categorizeHand(this)
+    }
 }
 
-fun charToCard(c: Char): Card {
-    val card = when (c) {
-        'A' -> Card.A
-        'K' -> Card.K
-        'Q' -> Card.Q
-        'J' -> Card.J
-        'T' -> Card.T
-        '9' -> Card._9
-        '8' -> Card._8
-        '7' -> Card._7
-        '6' -> Card._6
-        '5' -> Card._5
-        '4' -> Card._4
-        '3' -> Card._3
-        '2' -> Card._2
-        else -> throw IllegalStateException("Unknown card char $c")
-    }
-    return card
-}
+
 
 fun getHandsFromPuzzle(puzzle: List<String>): MutableList<Hand> {
     var allHands = mutableListOf<Hand>()
     puzzle.forEach {line ->
-        var cards = mutableListOf<Card>()
-        line.split("\\s".toRegex())[0]
-            .map { charToCard(it) }
-            .map { cards.add(it)}
-        val bid = line.split("\\s".toRegex())[1]
-            .trim().toInt()
+        val (cards, bid) = line.split("\\s".toRegex())
         allHands.add(Hand(cards, bid))
-        // allHands.add(Pair(cards, bid))
     }
     return allHands
 }
 
 fun categorizeHand(hand: Hand): HandType {
     println("Categorizing hand: $hand")
+    println("$hand.n")
     val grouping = hand.cards.groupingBy {it.rank}.eachCount()
         .filter {it.value > 1}
     println("Grouping: $grouping")
@@ -122,10 +144,12 @@ fun categorizeHand(hand: Hand): HandType {
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "sample_input.txt"
     val puzzle = readInput(filename)
-    puzzle.forEach {println(it)}
     val allHands = getHandsFromPuzzle(puzzle)
     println(allHands)
     allHands.forEach {hand -> categorizeHand(hand)}
-    // val hand1 = Hand("AAAAK", 123)
-    // println(allHands.sortedWith { compareBy{categorizeHand(it).strength} })
+    val hand1 = Hand("23333", "123")
+    val hand2 = Hand("32222", "123")
+    println("Strength of $hand1: ${hand1.strength}")
+    println("Strength of $hand2: ${hand2.strength}")
+    println(allHands.sortedWith(compareBy {it.strength} ).reversed())
 }

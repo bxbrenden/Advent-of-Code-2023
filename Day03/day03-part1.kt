@@ -21,15 +21,17 @@ fun make2DArray(puzzle: MutableList<String>): List<List<Char>> {
     return grid
 }
 
-fun findDigitsInRow(row: List<Char>): List<Int> {
+fun findDigitsInRow(row: List<Char>, rowIndex: Int): List<Pair<Int, Int>> {
     var indices = mutableListOf<Int>()
     for ((i, c) in row.withIndex()) {
         if (c.isDigit()) {
             indices.add(i)
         }
     }
-    println("Row \"$row\" contains digits at indices: $indices")
-    return indices
+    // println("Row \"$row\" contains digits at indices: $indices")
+    val digits = indices.map {Pair(rowIndex, it)}
+    // println("digits: $digits")
+    return digits
 }
 
 fun findSymbolsInRow(row: List<Char>): List<Int> {
@@ -212,38 +214,48 @@ fun findContiguousInts(line: List<Char>, rowNumber: Int, output: HashMap<Int, Li
     }
 }
 
+fun findGroups(coords: List<Pair<Int, Int>>,
+               groups: MutableList<MutableList<Pair<Int, Int>>>,
+               someGroup: MutableList<Pair<Int, Int>>,
+               currentIndex: Int = 0): MutableList<MutableList<Pair<Int, Int>>> {
+    if (currentIndex == 0) {
+        someGroup.add(coords[currentIndex])
+        return findGroups(coords, groups, someGroup, currentIndex + 1)
+    } else {
+        val current = coords[currentIndex]
+        val previous = coords[currentIndex - 1]
+        if (current.first == previous.first && current.second == previous.second + 1) {
+            someGroup.add(coords[currentIndex])
+            if (currentIndex == coords.size - 1) {
+                groups.add(someGroup)
+                return groups
+            } else {
+                return findGroups(coords, groups, someGroup, currentIndex + 1)
+            }
+        } else {
+            groups.add(someGroup)
+            var newGroup = mutableListOf<Pair<Int, Int>>(current)
+            if (currentIndex == coords.size - 1) {
+                groups.add(newGroup)
+                return groups
+            } else {
+                return findGroups(coords, groups, newGroup, currentIndex + 1)
+            }
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     val inputFile = if (args.size > 0) args[0] else "sample_input.txt"
     val puzzle = readFile(inputFile)
     val _2DArray: List<List<Char>> = make2DArray(puzzle)
-    val lineSize = _2DArray.size
-    _2DArray.forEach {println(it)}
-    // _2DArray.map {findDigitsInRow(it)}
-    // _2DArray.map {findSymbolsInRow(it)}
-
-    // var totalAdjacent: Int = 0
-    // for ((i, _) in _2DArray.withIndex()) {
-    //     for ((j, _) in _2DArray[0].withIndex()) {
-    //         if (_2DArray[i][j].isDigit()) {
-    //             totalAdjacent += findAdjacentSymbols(i, j, _2DArray)
-    //         }
-    //     }
-    // }
-    // println("Total Adjacent symbols before deduplication: $totalAdjacent")
-
-    var relevant = hashMapOf<Int, List<Pair<Int, Int>>>()
-    for ((index, line) in _2DArray.withIndex()) {
-        relevant = findContiguousInts(line, index, relevant, lineSize)
-    }
-    println(relevant)
-    var totalAdjacent = mutableSetOf<Int>()
-    for ((key, value) in relevant) {
-        for (v in value) {
-            if (findAdjacentSymbols(v.first, v.second, _2DArray) > 0) {
-                totalAdjacent.add(key)
-            }
+    var groups = mutableListOf<MutableList<Pair<Int, Int>>>()
+    for ((index, row) in _2DArray.withIndex()) {
+        var someGroup = mutableListOf<Pair<Int, Int>>()
+        val digits = findDigitsInRow(row, index)
+        if (digits.size > 0) {
+            groups = (findGroups(digits, groups, someGroup))
         }
     }
-    print("Generating answer using set:\n$totalAdjacent")
-    print("ANSWER: ${totalAdjacent.sum()}")
+    println(groups)
 }

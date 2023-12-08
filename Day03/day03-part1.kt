@@ -258,4 +258,20 @@ fun main(args: Array<String>) {
         }
     }
     println(groups)
+
+    var numAdjacent = 0
+    var adjacent = mutableListOf<Int>()
+    for (cluster in groups) {
+        for (pair in cluster) {
+            if (findAdjacentSymbols(pair.first, pair.second, _2DArray) > 0) {
+                numAdjacent++
+                val newNum = cluster
+                    .map {_2DArray[it.first][it.second]}
+                    .joinToString(separator = "").toInt()
+                adjacent.add(newNum)
+                break
+            }
+        }
+    }
+    print("Num. Adjacent: $numAdjacent, Adjacent: $adjacent, Sum: ${adjacent.sum()}")
 }

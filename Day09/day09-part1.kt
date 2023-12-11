@@ -10,7 +10,7 @@ fun readInput(filename: String): List<String> {
 
 fun getRowDiffs(row: List<Int>): List<Int>{
     var diffs = mutableListOf<Int>()
-    for ((i, num) in row.withIndex()) {
+    for ((i, _) in row.withIndex()) {
         if (i == row.size - 1) {
             break
         } else {
@@ -21,18 +21,28 @@ fun getRowDiffs(row: List<Int>): List<Int>{
     return diffs
 }
 
+fun getRecursiveRowDiffs(row: List<Int>, allDiffs: MutableList<List<Int>>): MutableList<List<Int>> {
+    allDiffs.add(row)
+    val diffs = getRowDiffs(row)
+    if (diffs.sum() == 0) {
+        allDiffs.add(diffs)
+        return allDiffs
+    } else {
+        return getRecursiveRowDiffs(diffs, allDiffs)
+    }
+}
+
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "sample_input.txt"
     val puzzle = readInput(filename)
-    var allDiffs = mutableListOf<List<Int>>()
     puzzle.forEach {line -> 
+        var allDiffs = mutableListOf<List<Int>>()
         var row = mutableListOf<Int>()
         line.trim()
             .split("\\s".toRegex())
             .map {it.toInt()}
             .map {row.add(it)}
-        val rowDiffs = getRowDiffs(row)
-        allDiffs.add(rowDiffs)
+        val recursiveRowDiffs = getRecursiveRowDiffs(row, allDiffs)
+        println(recursiveRowDiffs)
     }
-    println(allDiffs)
 }

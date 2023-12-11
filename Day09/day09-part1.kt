@@ -8,7 +8,7 @@ fun readInput(filename: String): List<String> {
     return lineList
 }
 
-fun getRowDiffs(row: List<Int>): List<Int>{
+fun getRowDiffs(row: MutableList<Int>): MutableList<Int>{
     var diffs = mutableListOf<Int>()
     for ((i, _) in row.withIndex()) {
         if (i == row.size - 1) {
@@ -21,7 +21,7 @@ fun getRowDiffs(row: List<Int>): List<Int>{
     return diffs
 }
 
-fun getRecursiveRowDiffs(row: List<Int>, allDiffs: MutableList<List<Int>>): MutableList<List<Int>> {
+fun getRecursiveRowDiffs(row: MutableList<Int>, allDiffs: MutableList<MutableList<Int>>): MutableList<MutableList<Int>> {
     allDiffs.add(row)
     val diffs = getRowDiffs(row)
     if (diffs.sum() == 0) {
@@ -32,17 +32,33 @@ fun getRecursiveRowDiffs(row: List<Int>, allDiffs: MutableList<List<Int>>): Muta
     }
 }
 
+fun reverseRecurseRowDiffs(revRows: MutableList<MutableList<Int>>, totalDiff: Int = 0, nextDiff: Int = 0, index: Int = 0): Int {
+    val nextestDiff = nextDiff + revRows[index].last()
+    val newTotal = totalDiff + nextestDiff
+    if (index == revRows.size - 1) {
+        return newTotal
+    } else {
+        return reverseRecurseRowDiffs(revRows, newTotal, nextDiff, index + 1)
+    }
+}
+
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "sample_input.txt"
     val puzzle = readInput(filename)
+    var answer = 0
     puzzle.forEach {line -> 
-        var allDiffs = mutableListOf<List<Int>>()
+        var allDiffs = mutableListOf<MutableList<Int>>()
         var row = mutableListOf<Int>()
         line.trim()
             .split("\\s".toRegex())
             .map {it.toInt()}
             .map {row.add(it)}
         val recursiveRowDiffs = getRecursiveRowDiffs(row, allDiffs)
-        println(recursiveRowDiffs)
+        var revved: MutableList<MutableList<Int>> = allDiffs.reversed().slice(1..<allDiffs.size).toMutableList()
+        println(revved)
+        val recRev = reverseRecurseRowDiffs(revved)
+        println(recRev)
+        answer += recRev
     }
+    println("Answer: $answer")
 }
